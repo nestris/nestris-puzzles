@@ -14,8 +14,8 @@ app.get("/api/raw", (req: Request, res: Response) => {
 
     const state = new GameState(
         new TetrisBoard(),
-        TetrominoType.I_TYPE,
-        TetrominoType.J_TYPE,
+        TetrominoType.T_TYPE,
+        TetrominoType.T_TYPE,
     );
 
     console.time("C++");
@@ -25,6 +25,25 @@ app.get("/api/raw", (req: Request, res: Response) => {
     
     res.send(result);
 });
+
+app.get("/api/simulate", (req: Request, res: Response) => {
+
+    const state = new GameState(
+        new TetrisBoard(),
+        TetrominoType.T_TYPE,
+        TetrominoType.T_TYPE,
+    );
+
+    for (let i = 0; i < 5; i++) {
+        state.makeMove(0);
+        state.print();
+    }
+
+    
+    res.send("success");
+});
+
+
 
 
 app.get("/", (req: Request, res: Response) => {
@@ -39,19 +58,13 @@ app.get("/", (req: Request, res: Response) => {
     const moves = getStackrabbitMoves(state);
     console.timeEnd("C++");
 
-    moves.forEach((move, i) => {
+    moves.nb.forEach((move, i) => {
 
         console.log(`Move ${i + 1}:`);
 
-        console.log("First Placement:");
         const board = state.getBoard().copy();
-        move.firstPlacement.print();
         move.firstPlacement.blitToBoard(board);
-        board.print();
-
-        console.log("Second Placement:");
-        move.secondPlacement.blitToBoard(board);
-        move.secondPlacement.print();
+        if (move.secondPlacement) move.secondPlacement.blitToBoard(board);
         board.print();
 
         console.log("Score:", move.score);

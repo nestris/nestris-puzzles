@@ -1,6 +1,5 @@
 import { GameState } from "./tetris-models/game-state";
 import MoveableTetromino from "./tetris-models/moveable-tetromino";
-import { TetrisBoard } from "./tetris-models/tetris-board";
 import { TetrominoType } from "./tetris-models/tetromino-type";
 
 const cModule = require("../cpp/cRabbit");
@@ -28,29 +27,32 @@ export function getRawStackrabbitMoves(state: GameState) {
 export interface StackrabbitMove {
 
     firstPlacement: MoveableTetromino;
-    secondPlacement: MoveableTetromino;
+    secondPlacement?: MoveableTetromino;
     score: number;
 
 }
 
-export function getStackrabbitMoves(state: GameState): StackrabbitMove[] {
+export interface StackrabbitResponse {
+    nnb: StackrabbitMove[];
+    nb: StackrabbitMove[];
+}
 
-    // run stackrabbit and get raw JSON
-    const response = getRawStackrabbitMoves(state);
+function parseStackrabbitMovelist(movelist: any[], currentPiece: TetrominoType, nextPiece?: TetrominoType): StackrabbitMove[] {
 
     // parse JSON into StackrabbitMove[]
     const moves: StackrabbitMove[] = [];
-    response["nextBox"].forEach((move: any) => {
+    movelist.forEach((move: any) => {
 
         const firstPlacement = MoveableTetromino.fromStackRabbitPose(
-            state.getCurrentPiece(),
+            currentPiece,
             move["firstPlacement"][0],
             move["firstPlacement"][1],
             move["firstPlacement"][2]
         );
 
-        const secondPlacement = MoveableTetromino.fromStackRabbitPose(
-            state.getNextPiece(),
+        let secondPlacement = undefined;
+        if (nextPiece) secondPlacement = MoveableTetromino.fromStackRabbitPose(
+            nextPiece,
             move["secondPlacement"][0],
             move["secondPlacement"][1],
             move["secondPlacement"][2]
@@ -64,5 +66,16 @@ export function getStackrabbitMoves(state: GameState): StackrabbitMove[] {
     });
 
     return moves;
+}
+
+export function getStackrabbitMoves(state: GameState): StackrabbitResponse {
+
+    // run stackrabbit and get raw JSON
+    const response = getRawStackrabbitMoves(state);
+
+    return {
+        nnb: parseStackrabbitMovelist(response["noNextBox"], state.getCurrentPiece(), undefined),
+        nb: parseStackrabbitMovelist(response["nextBox"], state.getCurrentPiece(), state.getNextPiece())
+    }
     
 }
