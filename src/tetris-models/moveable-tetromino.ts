@@ -25,6 +25,14 @@ export default class MoveableTetromino {
         return new MoveableTetromino(tetrominoType, 0, 3, y);
     }
 
+    // StackRabbit defines pose x relative to spawn position, so x refers to the number of translational inputs
+    // need to convert this to our coordinate system where x refers to the absolute position of the piece
+    static fromStackRabbitPose(tetrominoType: TetrominoType, r: number, x: number, y: number): MoveableTetromino {
+
+        return new MoveableTetromino(tetrominoType, r, x+3, y);
+
+    }
+
     constructor(public readonly tetrominoType: TetrominoType, private rotation: number, private translateX: number, private translateY: number) {
         this.color = getColorTypeForTetromino(tetrominoType);
         this.updateCurrentBlockSet()
