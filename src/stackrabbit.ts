@@ -5,20 +5,24 @@ import { TetrominoType } from "./tetris-models/tetromino-type";
 
 const cModule = require("../cpp/cRabbit");
 
+export function _rawStackrabbitMoves(request: string) {
+    return cModule.getTopMovesHybrid(request);
+}
+
 // returns raw JSON of Stackrabbit top moves given board, current piece, and next piece
 // it gives top 5 NNB moves, and top 5 NB moves
 export function getRawStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200) {
 
     const boardString = state.board.toBinaryString();
-    console.log(boardString);
 
     const level = 18; // puzzles are always at level 18
     const lines = 0; // puzzles are always at 0 lines
     const inputFrameTimeline = "X."; // puzzles are always at 30hz
 
-    const result = cModule.getTopMovesHybrid(
-        `${boardString}|${level}|${lines}|${state.currentType}|${state.nextType}|${inputFrameTimeline}|${playouts}|${depth}|`
-    );
+    const request = `${boardString}|${level}|${lines}|${state.currentType}|${state.nextType}|${inputFrameTimeline}|${playouts}|${depth}|`;
+    console.log("RAW:", request);
+
+    const result = _rawStackrabbitMoves(request);
     return JSON.parse(result);
 
 }
@@ -50,7 +54,7 @@ function parseStackrabbitMovelist(movelist: any[], currentPiece: TetrominoType, 
         );
 
         let secondPlacement = undefined;
-        if (nextPiece) secondPlacement = MoveableTetromino.fromStackRabbitPose(
+        if (nextPiece !== undefined) secondPlacement = MoveableTetromino.fromStackRabbitPose(
             nextPiece,
             move["secondPlacement"][0],
             move["secondPlacement"][1],

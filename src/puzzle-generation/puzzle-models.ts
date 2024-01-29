@@ -25,5 +25,4 @@ export interface PuzzleSolution {
     score: number; // StackRabbit evaluation
     firstPiece: MoveableTetromino; // placement of first piece
     secondPiece: MoveableTetromino; // placement of second piece
-    comment: string; // commentary for if user picks this solution
 }

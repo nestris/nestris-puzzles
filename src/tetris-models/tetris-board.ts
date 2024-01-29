@@ -107,6 +107,7 @@ export class TetrisBoard {
 
         return binaryString;
     }
+    
 
     // print 20x10 grid with the color numbers
     print() {

@@ -2,8 +2,8 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import { GameState } from "./tetris-models/game-state";
 import { TetrisBoard } from "./tetris-models/tetris-board";
-import { TetrominoType } from "./tetris-models/tetromino-type";
-import { getRawStackrabbitMoves, getStackrabbitMoves } from "./stackrabbit";
+import { TetrominoType, getTetrominoName } from "./tetris-models/tetromino-type";
+import { _rawStackrabbitMoves, getRawStackrabbitMoves, getStackrabbitMoves } from "./stackrabbit";
 import { getRandomBoardState } from "./puzzle-generation/get-random-puzzle";
 import { PuzzleEvaluation, evaluatePuzzle, getPuzzleEvaluationJSON, ratePuzzleDifficulty } from "./puzzle-generation/evaluate-puzzle";
 import { BoardState } from "./puzzle-generation/puzzle-models";
@@ -48,18 +48,23 @@ app.get("/api/simulate", (req: Request, res: Response) => {
 
 app.get("/random", async (req: Request, res: Response) => {
 
+    console.log("=======================\n\n");
+
     // keep generating puzzles until we get one that is rated
     let state: BoardState;
     let puzzle: PuzzleEvaluation | undefined = undefined;
     while (true) {
         state = getRandomBoardState();
+        console.log("\nFirst piece", getTetrominoName(state.currentType));
+        console.log("Second piece", getTetrominoName(state.nextType));
+        console.log();
         puzzle = evaluatePuzzle(state);
         if (ratePuzzleDifficulty(puzzle) !== undefined) break;
     }
     
     state.board.print();
-    console.log("Current Piece:", puzzle.bestFirstPlacement.getTetrisNotation());
-    console.log("Next Piece:", puzzle.bestSecondPlacement?.getTetrisNotation());
+    console.log("Current Piece:", puzzle.correctSolution.firstPiece.getTetrisNotation());
+    console.log("Next Piece:", puzzle.correctSolution.secondPiece.getTetrisNotation());
     
     res.send({puzzle: getPuzzleEvaluationJSON(puzzle)});
 });
@@ -69,31 +74,11 @@ app.get("/random", async (req: Request, res: Response) => {
 
 app.get("/", (req: Request, res: Response) => {
 
-    const state = new GameState(
-        new TetrisBoard(),
-        TetrominoType.I_TYPE,
-        TetrominoType.J_TYPE,
-    );
-
-    console.time("C++");
-    const moves = getStackrabbitMoves(state);
-    console.timeEnd("C++");
-
-    moves.nb.forEach((move, i) => {
-
-        console.log(`Move ${i + 1}:`);
-
-        const board = state.board.copy();
-        move.firstPlacement.blitToBoard(board);
-        if (move.secondPlacement) move.secondPlacement.blitToBoard(board);
-        board.print();
-
-        console.log("Score:", move.score);
-
-    });
+    const request = "00000000000000000000000000000000000000000000000000111011111011111111101111111110111111111011111111101111111110111111111011111111101111111110111111111011111111101111111110111111111011111111101111111110|18|0|1|1|X.|200|6|";
+    const result = _rawStackrabbitMoves(request);
 
 
-    res.send(moves);
+    res.send(result);
 });
 
 app.listen(port, () => {

@@ -1,7 +1,6 @@
 import { StackrabbitMove, StackrabbitResponse, getStackrabbitMoves } from "../stackrabbit";
 import MoveableTetromino from "../tetris-models/moveable-tetromino";
-import { BoardState, Puzzle } from "./puzzle-models";
-import regression from 'regression';
+import { BoardState, PuzzleSolution } from "./puzzle-models";
 
 // Find the matching placement in the response
 // if the placement is best move, return positive difference between best and second best
@@ -13,18 +12,18 @@ function getEvalDiff(response: StackrabbitResponse, placement: MoveableTetromino
     if (moves.length === 0) throw new Error("No moves in response");
 
     if (moves[0].firstPlacement.equals(placement)) {
-        console.log("BEST MOVE");
+        // console.log("BEST MOVE");
         return moves[0].score - moves[1].score;
     }
 
     for (let i = 1; i < moves.length; i++) {
         if (moves[i].firstPlacement.equals(placement)) {
-            console.log("MATCHING MOVE", i);
+            // console.log("MATCHING MOVE", i);
             return moves[i].score - moves[0].score;
         }
     }
 
-    console.log("NO MATCH");
+    // console.log("NO MATCH");
     return -100;
 }
 
@@ -37,13 +36,13 @@ const highDepth: PlayoutSettings = {depth: 6, playouts: 200};
 const lowDepth: PlayoutSettings = {depth: 1, playouts: 100};
 
 export interface PuzzleEvaluation {
-    bestFirstPlacement: MoveableTetromino;
-    bestSecondPlacement: MoveableTetromino;
-    bestMoveEval: number; // eval for the best move
     deepDiff: number;
     deepMoves: StackrabbitMove[];
     shallowDiff: number;
     shallowMoves: StackrabbitMove[];
+
+    correctSolution: PuzzleSolution;
+    incorrectSolutions: PuzzleSolution[];
 }
 
 /*
@@ -57,20 +56,33 @@ export function evaluatePuzzle(state: BoardState): PuzzleEvaluation {
 
     const bestMove = deepEval.nb[0];
 
+    if (bestMove.secondPlacement === undefined) {
+        console.log(bestMove);
+        throw new Error("No second placement");
+    }
+
     const deepDiff = getEvalDiff(deepEval, bestMove.firstPlacement);
     const shallowDiff = getEvalDiff(shallowEval, bestMove.firstPlacement);
 
-    console.log("first", bestMove.firstPlacement.getTetrisNotation());
-    console.log("second", bestMove.secondPlacement!.getTetrisNotation());
-
     return {
-        bestFirstPlacement: bestMove.firstPlacement,
-        bestSecondPlacement: bestMove.secondPlacement!,
-        bestMoveEval: bestMove.score,
         deepDiff: deepDiff,
         deepMoves: deepEval.nb,
         shallowDiff: shallowDiff,
-        shallowMoves: shallowEval.nb
+        shallowMoves: shallowEval.nb,
+        correctSolution: {
+            votes: 0,
+            score: bestMove.score,
+            firstPiece: bestMove.firstPlacement,
+            secondPiece: bestMove.secondPlacement!,
+        },
+        incorrectSolutions: deepEval.nb.slice(1).map((move) => {
+            return {
+                votes: 0,
+                score: move.score,
+                firstPiece: move.firstPlacement,
+                secondPiece: move.secondPlacement!,
+            }
+        })
     }
 }
 
@@ -85,7 +97,7 @@ function shallowDiffToElo(shallowDiff: number): number {
 export function ratePuzzleDifficulty(evaluation: PuzzleEvaluation): number | undefined {
 
     // if the overall eval of the board is too low, discard
-    if (evaluation.bestMoveEval < -100) return undefined;
+    if (evaluation.correctSolution.score < -100) return undefined;
 
     // if the top two moves are too similar in eval, discard
     if (evaluation.deepDiff < 5) return undefined;
@@ -93,11 +105,12 @@ export function ratePuzzleDifficulty(evaluation: PuzzleEvaluation): number | und
     return shallowDiffToElo(evaluation.shallowDiff);
 }
 
+// get a JSON representation of the puzzle evaluation (for debug only)
 export function getPuzzleEvaluationJSON(evaluation: PuzzleEvaluation): any {
     return {
         elo: ratePuzzleDifficulty(evaluation),
-        bestFirstPlacement: evaluation.bestFirstPlacement.getTetrisNotation(),
-        bestSecondPlacement: evaluation.bestSecondPlacement.getTetrisNotation(),
+        bestFirstPlacement: evaluation.correctSolution.firstPiece.getTetrisNotation(),
+        bestSecondPlacement: evaluation.correctSolution.secondPiece.getTetrisNotation(),
         deep: {
             diff: evaluation.deepDiff,
             moves: getMovesJSON(evaluation.deepMoves)
@@ -109,6 +122,7 @@ export function getPuzzleEvaluationJSON(evaluation: PuzzleEvaluation): any {
     }
 }
 
+// get a JSON representation of the moves (for debug only)
 function getMovesJSON(moves: StackrabbitMove[]) {
     return moves.map((move) => {
         return {
