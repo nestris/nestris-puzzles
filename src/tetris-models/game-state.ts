@@ -1,33 +1,22 @@
+import { BoardState } from "../puzzle-generation/puzzle-models";
 import { StackrabbitResponse, getStackrabbitMoves } from "../stackrabbit";
 import MoveableTetromino from "./moveable-tetromino";
 import { TetrisBoard } from "./tetris-board";
 import { TetrominoType, getRandomTetrominoType } from "./tetromino-type";
 
-export class GameState {
+export class GameState implements BoardState {
 
     constructor(
-        private board: TetrisBoard,
-        private currentPiece: TetrominoType,
-        private nextPiece: TetrominoType
+        public board: TetrisBoard,
+        public currentType: TetrominoType,
+        public nextType: TetrominoType
     ) {}
-
-    getBoard(): TetrisBoard {
-        return this.board;
-    }
-
-    getCurrentPiece(): TetrominoType {
-        return this.currentPiece;
-    }
-
-    getNextPiece(): TetrominoType {
-        return this.nextPiece;
-    }
 
     // place a piece on the board. Throws an error if the piece is not valid
     placePiece(piece: MoveableTetromino) {
 
         // make sure piece matches current piece
-        if (piece.tetrominoType !== this.currentPiece) {
+        if (piece.tetrominoType !== this.currentType) {
             throw new Error("Piece does not match current piece");
         }
 
@@ -42,8 +31,8 @@ export class GameState {
         piece.blitToBoard(this.board);
 
         // update current and next pieces
-        this.currentPiece = this.nextPiece;
-        this.nextPiece = getRandomTetrominoType();
+        this.currentType = this.nextType;
+        this.nextType = getRandomTetrominoType();
     }
 
     // perform StackRabbit analysis to get the top 5 moves.
@@ -62,8 +51,8 @@ export class GameState {
     }
 
     print() {
-        console.log("Current Piece:", this.currentPiece);
-        console.log("Next Piece:", this.nextPiece);
+        console.log("Current Piece:", this.currentType);
+        console.log("Next Piece:", this.nextType);
         this.board.print();
     }
 

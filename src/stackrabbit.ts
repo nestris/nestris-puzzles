@@ -1,24 +1,21 @@
-import { GameState } from "./tetris-models/game-state";
+import { BoardState } from "./puzzle-generation/puzzle-models";
 import MoveableTetromino from "./tetris-models/moveable-tetromino";
 import { TetrominoType } from "./tetris-models/tetromino-type";
 
 const cModule = require("../cpp/cRabbit");
 
-const NUM_PLAYOUTS = 200;
-const PLAYOUT_DEPTH = 6;
-
 // returns raw JSON of Stackrabbit top moves given board, current piece, and next piece
 // it gives top 5 NNB moves, and top 5 NB moves
-export function getRawStackrabbitMoves(state: GameState) {
+export function getRawStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200) {
 
-    const boardString = state.getBoard().toBinaryString();
+    const boardString = state.board.toBinaryString();
 
     const level = 18; // puzzles are always at level 18
     const lines = 0; // puzzles are always at 0 lines
     const inputFrameTimeline = "X."; // puzzles are always at 30hz
 
     const result = cModule.getTopMovesHybrid(
-        `${boardString}|${level}|${lines}|${state.getCurrentPiece()}|${state.getNextPiece()}|${inputFrameTimeline}|${NUM_PLAYOUTS}|${PLAYOUT_DEPTH}|`
+        `${boardString}|${level}|${lines}|${state.currentType}|${state.nextType}|${inputFrameTimeline}|${playouts}|${depth}|`
     );
     return JSON.parse(result);
 
@@ -68,14 +65,13 @@ function parseStackrabbitMovelist(movelist: any[], currentPiece: TetrominoType, 
     return moves;
 }
 
-export function getStackrabbitMoves(state: GameState): StackrabbitResponse {
+export function getStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200): StackrabbitResponse {
 
     // run stackrabbit and get raw JSON
-    const response = getRawStackrabbitMoves(state);
+    const response = getRawStackrabbitMoves(state, depth, playouts);
 
     return {
-        nnb: parseStackrabbitMovelist(response["noNextBox"], state.getCurrentPiece(), undefined),
-        nb: parseStackrabbitMovelist(response["nextBox"], state.getCurrentPiece(), state.getNextPiece())
+        nnb: parseStackrabbitMovelist(response["noNextBox"], state.currentType, undefined),
+        nb: parseStackrabbitMovelist(response["nextBox"], state.currentType, state.nextType)
     }
-    
 }

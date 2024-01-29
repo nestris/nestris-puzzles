@@ -4,6 +4,8 @@ import { GameState } from "./tetris-models/game-state";
 import { TetrisBoard } from "./tetris-models/tetris-board";
 import { TetrominoType } from "./tetris-models/tetromino-type";
 import { getRawStackrabbitMoves, getStackrabbitMoves } from "./stackrabbit";
+import { getRandomBoardState } from "./puzzle-generation/get-random-puzzle";
+import { evaluatePuzzle } from "./puzzle-generation/evaluate-puzzle";
 
 dotenv.config();
 
@@ -43,6 +45,16 @@ app.get("/api/simulate", (req: Request, res: Response) => {
     res.send("success");
 });
 
+app.get("/random", async (req: Request, res: Response) => {
+
+    const state = getRandomBoardState();
+    state.board.print();
+
+    const puzzle = await evaluatePuzzle(state);
+
+    res.send({puzzle: puzzle});
+});
+
 
 
 
@@ -62,7 +74,7 @@ app.get("/", (req: Request, res: Response) => {
 
         console.log(`Move ${i + 1}:`);
 
-        const board = state.getBoard().copy();
+        const board = state.board.copy();
         move.firstPlacement.blitToBoard(board);
         if (move.secondPlacement) move.secondPlacement.blitToBoard(board);
         board.print();
