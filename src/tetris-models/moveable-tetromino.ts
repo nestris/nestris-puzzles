@@ -42,35 +42,6 @@ export default class MoveableTetromino {
         return new MoveableTetromino(this.tetrominoType, this.rotation, this.translateX, this.translateY);
     }
 
-    // encoding format: TRXXYY
-    public encodeAsNumber(): number {
-
-        const typeAsNumber: number = this.tetrominoType as number;
-        return typeAsNumber * 100000 + this.rotation * 10000 + this.translateX * 100 + this.translateY;
-    }
-
-    static decodeFromNumber(number: number): MoveableTetromino {
-
-        const typeAsNumber = Math.floor(number / 100000);
-        let type: TetrominoType;
-        switch (typeAsNumber) {
-            case 0: type = TetrominoType.I_TYPE; break;
-            case 1: type = TetrominoType.J_TYPE; break;
-            case 2: type = TetrominoType.L_TYPE; break;
-            case 3: type = TetrominoType.O_TYPE; break;
-            case 4: type = TetrominoType.S_TYPE; break;
-            case 5: type = TetrominoType.T_TYPE; break;
-            case 6: type = TetrominoType.Z_TYPE; break;
-            default: throw new Error("invalid typeAsNumber");
-        }
-
-        const rotation = Math.floor((number % 100000) / 10000);
-        const translateX = Math.floor((number % 10000) / 100);
-        const translateY = Math.floor(number % 100);
-
-        return new MoveableTetromino(type, rotation, translateX, translateY);
-    }
-
     static doesBlocksetMatchMask(pieceMask: TetrisBoard, maskStartX: number, maskStartY: number, blockSet: BlockSet): boolean {
         let exists = true;
         blockSet.blocks.forEach(block => {

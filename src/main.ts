@@ -5,7 +5,8 @@ import { TetrisBoard } from "./tetris-models/tetris-board";
 import { TetrominoType } from "./tetris-models/tetromino-type";
 import { getRawStackrabbitMoves, getStackrabbitMoves } from "./stackrabbit";
 import { getRandomBoardState } from "./puzzle-generation/get-random-puzzle";
-import { evaluatePuzzle } from "./puzzle-generation/evaluate-puzzle";
+import { PuzzleEvaluation, evaluatePuzzle, getPuzzleEvaluationJSON, ratePuzzleDifficulty } from "./puzzle-generation/evaluate-puzzle";
+import { BoardState } from "./puzzle-generation/puzzle-models";
 
 dotenv.config();
 
@@ -47,12 +48,20 @@ app.get("/api/simulate", (req: Request, res: Response) => {
 
 app.get("/random", async (req: Request, res: Response) => {
 
-    const state = getRandomBoardState();
+    // keep generating puzzles until we get one that is rated
+    let state: BoardState;
+    let puzzle: PuzzleEvaluation | undefined = undefined;
+    while (true) {
+        state = getRandomBoardState();
+        puzzle = evaluatePuzzle(state);
+        if (ratePuzzleDifficulty(puzzle) !== undefined) break;
+    }
+    
     state.board.print();
-
-    const puzzle = await evaluatePuzzle(state);
-
-    res.send({puzzle: puzzle});
+    console.log("Current Piece:", puzzle.bestFirstPlacement.getTetrisNotation());
+    console.log("Next Piece:", puzzle.bestSecondPlacement?.getTetrisNotation());
+    
+    res.send({puzzle: getPuzzleEvaluationJSON(puzzle)});
 });
 
 

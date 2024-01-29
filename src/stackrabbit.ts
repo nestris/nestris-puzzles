@@ -10,6 +10,7 @@ const cModule = require("../cpp/cRabbit");
 export function getRawStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200) {
 
     const boardString = state.board.toBinaryString();
+    console.log(boardString);
 
     const level = 18; // puzzles are always at level 18
     const lines = 0; // puzzles are always at 0 lines

@@ -95,13 +95,13 @@ export class TetrisBoard {
         return grid;
     }
 
-    // return a string of 400 bits
+    // return 200 0s and 1s
     toBinaryString(): string {
         let binaryString = '';
 
         for (let y = 0; y < 20; y++) {
             for (let x = 0; x < 10; x++) {
-                binaryString += this.getAt(x,y);
+                binaryString += (this.getAt(x,y) === ColorType.EMPTY ? '0' : '1')
             }
         }
 
