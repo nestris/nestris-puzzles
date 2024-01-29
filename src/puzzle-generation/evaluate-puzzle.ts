@@ -39,49 +39,33 @@ export interface PlayoutSettings {
     playouts: number;
 }
 
-const allPlayoutSettings: PlayoutSettings[] = [
-    {depth: 6, playouts: 200},
-    {depth: 4, playouts: 200},
-    {depth: 2, playouts: 100},
-    {depth: 1, playouts: 100},
-];
+
+const highDepth: PlayoutSettings = {depth: 6, playouts: 200};
+const lowDepth: PlayoutSettings = {depth: 1, playouts: 100};
 
 // should ultimately return Promise<puzzle | undefined>
 export async function evaluatePuzzle(state: BoardState): Promise<any> {
 
-    const evals = allPlayoutSettings.map((settings) => {
-        return getStackrabbitMoves(state, settings.depth, settings.playouts);
-    });
+    const deepEval = getStackrabbitMoves(state, highDepth);
+    const shallowEval = getStackrabbitMoves(state, lowDepth);
 
-    const bestMove = evals[0].nb[0].firstPlacement;
-    const diffs = evals.map((response) => {
-        return getEvalDiff(response, bestMove);
-    });
+    const bestMove = deepEval.nb[0].firstPlacement;
+    const deepDiff = getEvalDiff(deepEval, bestMove);
+    const shallowDiff = getEvalDiff(shallowEval, bestMove);
 
-    const depthDiffPairs: [number, number][] = [];
-    for (let i = 0; i < diffs.length; i++) {
-        let diff = diffs[i] ?? -20;
-        depthDiffPairs.push([allPlayoutSettings[i].depth, diff]);
-    }
-
-    const bestFit = regression.linear(depthDiffPairs);
-
-    const response: any[] = [];
-
-    for (let i = 0; i < diffs.length; i++) {
-        response.push({
-            depth: allPlayoutSettings[i].depth,
-            playouts: allPlayoutSettings[i].playouts,
-            diff: diffs[i],
-            moves: condenseResponse(evals[i])
-        });
-    }
+    console.log("first", bestMove.getTetrisNotation());
+    console.log("second", deepEval.nb[0].secondPlacement?.getTetrisNotation());
 
     return {
         bestMove: bestMove.getTetrisNotation(),
-        equation: bestFit.equation,
-        equationString: bestFit.string,
-        response: response
+        deep: {
+            diff: deepDiff,
+            placements: condenseResponse(deepEval)
+        },
+        shallow: {
+            diff: shallowDiff,
+            placements: condenseResponse(shallowEval)
+        }
     }
 }
 
@@ -89,7 +73,8 @@ function condenseResponse(response: StackrabbitResponse) {
     const result: any = {};
     return response.nb.map((move) => {
         return {
-            placement: move.firstPlacement.getTetrisNotation(),
+            firstPlacement: move.firstPlacement.getTetrisNotation(),
+            secondPlacement: move.secondPlacement?.getTetrisNotation(),
             score: move.score
         }
     });

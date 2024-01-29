@@ -1,7 +1,7 @@
 import { BlockSet } from "./block-set";
 import { TetrisBoard } from "./tetris-board";
 import { ColorType, getColorTypeForTetromino } from "./tetromino-colors";
-import { TetrominoType } from "./tetromino-type";
+import { TetrominoType, getTetrominoName } from "./tetromino-type";
 import { Tetromino } from "./tetrominos";
 
 /*
@@ -189,7 +189,14 @@ export default class MoveableTetromino {
     // return in tetris notation
     public getTetrisNotation(): string {
 
-        let string = "" + this.tetrominoType + "-";
+        const tetrominoName = getTetrominoName(this.tetrominoType);
+
+        // show rotations for T, J, and L pieces
+        let rotationString = "";
+        if ([TetrominoType.T_TYPE, TetrominoType.J_TYPE, TetrominoType.L_TYPE].includes(this.tetrominoType)) {
+            const ROTATION_STRINGS = ["d", "l", "u", "r"];
+            rotationString = ROTATION_STRINGS[this.rotation];
+        }
 
         // find all the columns that have blocks
         const columns: number[] = [];
@@ -203,12 +210,13 @@ export default class MoveableTetromino {
         columns.sort((a, b) => a - b);
 
         // assemble into string
+        let columnString = "";
         columns.forEach(column => {
-            if (column === 9) string += "0";
-            else string += column + 1;
+            if (column === 9) columnString += "0";
+            else columnString += column + 1;
         });
 
-        return string;
+        return `${tetrominoName}${rotationString}-${columnString}`
     }
 
     public print() {

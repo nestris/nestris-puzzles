@@ -1,3 +1,4 @@
+import { PlayoutSettings } from "./puzzle-generation/evaluate-puzzle";
 import { BoardState } from "./puzzle-generation/puzzle-models";
 import MoveableTetromino from "./tetris-models/moveable-tetromino";
 import { TetrominoType } from "./tetris-models/tetromino-type";
@@ -65,12 +66,15 @@ function parseStackrabbitMovelist(movelist: any[], currentPiece: TetrominoType, 
     return moves;
 }
 
-export function getStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200): StackrabbitResponse {
+export function getStackrabbitMoves(state: BoardState, playoutSettings: PlayoutSettings = {
+    depth: 6,
+    playouts: 200
+}): StackrabbitResponse {
 
     // run stackrabbit and get raw JSON
-    console.time(`Stackrabbit ${depth} ${playouts}`);
-    const response = getRawStackrabbitMoves(state, depth, playouts);
-    console.timeEnd(`Stackrabbit ${depth} ${playouts}`);
+    console.time(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
+    const response = getRawStackrabbitMoves(state, playoutSettings.depth, playoutSettings.playouts);
+    console.timeEnd(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
 
     return {
         nnb: parseStackrabbitMovelist(response["noNextBox"], state.currentType, undefined),
