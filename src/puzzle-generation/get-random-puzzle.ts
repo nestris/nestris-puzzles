@@ -34,7 +34,7 @@ export function getRandomBoard() {
 
         // delta is random number from 2 to -4
         let delta = Math.floor(Math.random() * 7) - 4;
-        if (Math.random() < 0.3) delta = 0; // 50% chance of no change
+        if (Math.random() < 0.4) delta = 0; // 50% chance of no change
 
         height += delta;
 

@@ -68,7 +68,9 @@ function parseStackrabbitMovelist(movelist: any[], currentPiece: TetrominoType, 
 export function getStackrabbitMoves(state: BoardState, depth: number = 6, playouts: number = 200): StackrabbitResponse {
 
     // run stackrabbit and get raw JSON
+    console.time(`Stackrabbit ${depth} ${playouts}`);
     const response = getRawStackrabbitMoves(state, depth, playouts);
+    console.timeEnd(`Stackrabbit ${depth} ${playouts}`);
 
     return {
         nnb: parseStackrabbitMovelist(response["noNextBox"], state.currentType, undefined),
