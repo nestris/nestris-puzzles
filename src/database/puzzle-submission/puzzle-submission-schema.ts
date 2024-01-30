@@ -1,4 +1,4 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
+import { getModelForClass, index, prop } from '@typegoose/typegoose';
 import { IPlacementSchema, PuzzleStatus } from '../puzzle/puzzle-schema';
 
 // a submission of a puzzle attempt by a user
@@ -28,10 +28,10 @@ export interface IPuzzleSubmissionSchema {
     puzzleAttempts: number; // number of attempts of the puzzle including this submission    
 }
 
-
+@index({submissionID: 1}, {unique: true})
 class PuzzleSubmissionSchema implements IPuzzleSubmissionSchema {
 
-    @prop({ required: true, unique: true})
+    @prop({ required: true})
     public submissionID!: string;
 
     @prop({ required: true })

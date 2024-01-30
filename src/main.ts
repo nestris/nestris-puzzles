@@ -7,11 +7,16 @@ import { _rawStackrabbitMoves, getRawStackrabbitMoves, getStackrabbitMoves } fro
 import { getRandomBoardState } from "./puzzle-generation/generate-random-puzzle";
 import { PuzzleEvaluation, evaluatePuzzle, getPuzzleEvaluationJSON, ratePuzzleDifficulty } from "./puzzle-generation/evaluate-puzzle";
 import { BoardState } from "./puzzle-models";
+import { getActivePuzzleForUser } from "./puzzle-manipulation/puzzle-selection";
+import { generateAndAddPuzzlesToDatabase } from "./puzzle-generation/generate-puzzles";
+import { connectToDatabase } from "./database/connect-to-database";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
+
+app.use(express.json());
 
 app.get("/api/raw", (req: Request, res: Response) => {
 
@@ -27,6 +32,37 @@ app.get("/api/raw", (req: Request, res: Response) => {
 
     
     res.send(result);
+});
+
+/*
+POST body {
+    username: string,   
+} */
+app.post("/api/fetch-puzzle-for-user", (req: Request, res: Response) => {
+
+    const username = req.body['username'];
+    if (!username) res.status(400).send("Must provide username");
+
+    const puzzle = getActivePuzzleForUser(username);
+    res.send(puzzle);
+});
+/*
+POST body {
+    count: number,   
+} */
+app.post("/api/generate-puzzles", async (req: Request, res: Response) => {
+
+    const count = req.body['count'];
+    if (!count) res.status(400).send("Must provide an integer count >= 1");
+
+    const countNum = parseInt(count);
+    if (isNaN(countNum) || countNum <= 0) res.status(400).send("Count must be positive");
+
+    const puzzleIDs = await generateAndAddPuzzlesToDatabase(countNum);
+    res.send({
+        message: `Successfully generated ${puzzleIDs.length} puzzles`,
+        puzzleIDs: puzzleIDs
+    });
 });
 
 app.get("/api/simulate", (req: Request, res: Response) => {
@@ -81,6 +117,9 @@ app.get("/", (req: Request, res: Response) => {
     res.send(result);
 });
 
-app.listen(port, () => {
-    console.log(`[server]: Server is running at http://localhost:${port}`);
+// conenct to database, then start server
+connectToDatabase().then(() => {
+    app.listen(port, () => {
+        console.log(`[server]: Server is running at http://localhost:${port}`);
+    });
 });

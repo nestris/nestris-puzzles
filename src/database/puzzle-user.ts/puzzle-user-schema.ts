@@ -1,4 +1,4 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
+import { getModelForClass, index, prop } from '@typegoose/typegoose';
 import { IPuzzleSchema } from '../puzzle/puzzle-schema';
 
 /*
@@ -20,9 +20,11 @@ export interface IPuzzleUserSchema {
 }
 
 // User class with Typegoose decorators, implementing the IUser interface
+@index({username: 1}, {unique: true})
+@index({elo: 1})
 class PuzzleUserSchema implements IPuzzleUserSchema {
 
-    @prop({ required: true, unique: true})
+    @prop({ required: true})
     public username!: string;
 
     @prop({ required: true })

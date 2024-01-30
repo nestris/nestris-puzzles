@@ -37,6 +37,7 @@ export function generatePuzzle(): Puzzle | undefined {
 }
 
 // generate and add the specified number of puzzles to the database
+// returns a list of puzzle IDs
 export async function generateAndAddPuzzlesToDatabase(numPuzzles: number = 1) {
 
     console.time(`Generate ${numPuzzles} Puzzles`);
@@ -51,6 +52,8 @@ export async function generateAndAddPuzzlesToDatabase(numPuzzles: number = 1) {
     console.timeEnd(`Generate ${numPuzzles} Puzzles`);
 
     console.time("Add Puzzles to Database");
-    await batchAddPuzzlesToDatabase(puzzles);
+    const puzzleIDs = await batchAddPuzzlesToDatabase(puzzles);
     console.timeEnd("Add Puzzles to Database");
+
+    return puzzleIDs;
 }

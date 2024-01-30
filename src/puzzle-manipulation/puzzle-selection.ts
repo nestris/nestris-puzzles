@@ -3,7 +3,7 @@ Deals with selecting a puzzle for player to solve
 */
 
 import { IActivePuzzleSchema, IPuzzleUserSchema } from "../database/puzzle-user.ts/puzzle-user-schema";
-import { getUserByUsername } from "../database/puzzle-user.ts/puzzle-user-service";
+import { getUserByUsername, setActivePuzzleFromDB } from "../database/puzzle-user.ts/puzzle-user-service";
 import { IPuzzleSchema, PuzzleStatus } from "../database/puzzle/puzzle-schema";
 import { getBoundedRandomPuzzleFromDB, getRandomPuzzleFromDB } from "../database/puzzle/puzzle-service";
 
@@ -27,7 +27,7 @@ async function selectNewPuzzleForUser(user: IPuzzleUserSchema): Promise<IPuzzleS
 
     // A (50% chance)
     if (rand < 0.5) {
-        console.log("A: attempting (-200,200) stable search");
+        console.log(`A: attempting (${user.elo - 200},${user.elo + 200}) stable search`);
         const puzzleStable200 = await getBoundedRandomPuzzleFromDB(
             user.username, user.elo - 200, user.elo + 200, PuzzleStatus.STABLE
         );
@@ -36,7 +36,7 @@ async function selectNewPuzzleForUser(user: IPuzzleUserSchema): Promise<IPuzzleS
 
     // B (30% chance OR A fails)
     if (rand < 0.8) {
-        console.log("B: attempting (-400,400) stable search");
+        console.log(`B: attempting (${user.elo - 400},${user.elo + 400}) stable search`);
         const puzzleStable400 = await getBoundedRandomPuzzleFromDB(
             user.username, user.elo - 400, user.elo + 400, PuzzleStatus.STABLE
         );
@@ -44,7 +44,7 @@ async function selectNewPuzzleForUser(user: IPuzzleUserSchema): Promise<IPuzzleS
     }
 
     // C (20% chance OR A and B fail)
-    console.log("C: attempting (-400,400) pending search");
+    console.log(`C: attempting (${user.elo - 400},${user.elo + 400}) pending search`);
     const puzzlePending400 = await getBoundedRandomPuzzleFromDB(
         user.username, user.elo - 400, user.elo + 400, PuzzleStatus.PENDING
     );
@@ -83,7 +83,7 @@ export async function getActivePuzzleForUser(username: string): Promise<IActiveP
     // fetch user info from DB
     const user = await getUserByUsername(username);
 
-    console.log("Getting active puzzle for", user.username);
+    console.log("Getting active puzzle for", user.username, " with elo", user.elo);
 
     // if user already has an active puzzle started, return that
     if (user.activePuzzle) {
@@ -96,7 +96,13 @@ export async function getActivePuzzleForUser(username: string): Promise<IActiveP
     const selectedPuzzle = await selectNewPuzzleForUser(user);
     console.log("Puzzle selected:", selectedPuzzle.id);
 
-    // calculate pairing and return result
-    return calculatePuzzlePairing(user, selectedPuzzle);
+
+    // calculate pairing
+    const activePuzzle = calculatePuzzlePairing(user, selectedPuzzle);
+
+    // update database with active puzzle for user
+    await setActivePuzzleFromDB(user.username, activePuzzle);
+
+    return activePuzzle;
 
 }

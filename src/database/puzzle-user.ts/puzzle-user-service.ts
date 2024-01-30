@@ -21,13 +21,15 @@ export async function getUserByUsername(username: string): Promise<IPuzzleUserSc
 }
 
 // get the active puzzle for the user, if it exists
-export async function getActivePuzzle(username: string): Promise<IActivePuzzleSchema | null> {
+export async function getActivePuzzleFromDB(username: string): Promise<IActivePuzzleSchema | null> {
     const user = await getUserByUsername(username);
     return user.activePuzzle;
 }
 
 // set the active puzzle for a user
-export async function setActivePuzzle(username: string, puzzle: IActivePuzzleSchema | null) {
+export async function setActivePuzzleFromDB(username: string, puzzle: IActivePuzzleSchema | null) {
+    console.log(`Setting active puzzle ${puzzle?.id} for user ${username}`);
+    
     await DBPuzzleUser.findOneAndUpdate(
         {username: username},
         {
@@ -38,6 +40,6 @@ export async function setActivePuzzle(username: string, puzzle: IActivePuzzleSch
 }
 
 // set active puzzle for a user to null
-export async function clearActivePuzzle(username: string) {
-    await setActivePuzzle(username, null);
+export async function clearActivePuzzleFromDB(username: string) {
+    await setActivePuzzleFromDB(username, null);
 }

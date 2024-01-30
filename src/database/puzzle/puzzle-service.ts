@@ -43,9 +43,13 @@ export async function addPuzzleToDatabase(puzzle: Puzzle) {
 }
 
 // Adds an array of puzzles to the database
-export async function batchAddPuzzlesToDatabase(puzzles: Puzzle[]) {
-    const dbPuzzles = puzzles.map(encodePuzzle).map((puzzle) => new DBPuzzle(puzzle));
+// returns a list of puzzle IDs
+export async function batchAddPuzzlesToDatabase(puzzles: Puzzle[]): Promise<string[]> {
+    const encodedPuzzles = puzzles.map(encodePuzzle);
+    const dbPuzzles = encodedPuzzles.map((puzzle) => new DBPuzzle(puzzle));
     await DBPuzzle.insertMany(dbPuzzles);
+
+    return encodedPuzzles.map((puzzle) => puzzle.id);
 }
 
 export async function updatePuzzleAfterPuzzleSubmission(

@@ -1,4 +1,4 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
+import { getModelForClass, index, prop } from '@typegoose/typegoose';
 import { IPuzzleSubmissionSchema } from '../puzzle-submission/puzzle-submission-schema';
 
 export interface IPlacementSchema {
@@ -38,9 +38,12 @@ export enum PuzzleStatus {
     STABLE = "STABLE", // puzzle elo is now fixed
 }
 
+@index({id: 1}, {unique: true})
+@index({elo: 1})
+@index({usernames: 1})
 class PuzzleSchema implements IPuzzleSchema {
 
-    @prop({ required: true, unique: true})
+    @prop({ required: true})
     public id!: string;
 
     @prop({ required: true, enum: PuzzleStatus})
@@ -52,7 +55,7 @@ class PuzzleSchema implements IPuzzleSchema {
     @prop({ required: true })
     public initialElo!: number;
 
-    @prop({ required: true })
+    @prop({ required: true})
     public elo!: number;
 
     @prop({ required: true })
@@ -67,7 +70,7 @@ class PuzzleSchema implements IPuzzleSchema {
     @prop({ default: 0 })
     public successes!: number;
 
-    @prop({ default : [] })
+    @prop({ default : []})
     public usernames!: string[];
 
 }
