@@ -1,7 +1,7 @@
 import { TetrisBoard } from "../tetris-models/tetris-board";
 import { ColorType } from "../tetris-models/tetromino-colors";
 import { getRandomTetrominoType } from "../tetris-models/tetromino-type";
-import { BoardState } from "./puzzle-models";
+import { BoardState } from "../puzzle-models";
 
 export function getFixedBoard(): TetrisBoard {
     const row = "0000000000";

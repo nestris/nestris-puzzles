@@ -1,5 +1,5 @@
 import { PlayoutSettings } from "./puzzle-generation/evaluate-puzzle";
-import { BoardState } from "./puzzle-generation/puzzle-models";
+import { BoardState } from "./puzzle-models";
 import MoveableTetromino from "./tetris-models/moveable-tetromino";
 import { TetrominoType } from "./tetris-models/tetromino-type";
 
@@ -20,7 +20,6 @@ export function getRawStackrabbitMoves(state: BoardState, depth: number = 6, pla
     const inputFrameTimeline = "X."; // puzzles are always at 30hz
 
     const request = `${boardString}|${level}|${lines}|${state.currentType}|${state.nextType}|${inputFrameTimeline}|${playouts}|${depth}|`;
-    console.log("RAW:", request);
 
     const result = _rawStackrabbitMoves(request);
     return JSON.parse(result);
@@ -77,9 +76,9 @@ export function getStackrabbitMoves(state: BoardState, playoutSettings: PlayoutS
 }): StackrabbitResponse {
 
     // run stackrabbit and get raw JSON
-    console.time(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
+    //console.time(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
     const response = getRawStackrabbitMoves(state, playoutSettings.depth, playoutSettings.playouts);
-    console.timeEnd(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
+    //console.timeEnd(`Stackrabbit ${playoutSettings.depth} ${playoutSettings.playouts}`);
 
     return {
         nnb: parseStackrabbitMovelist(response["noNextBox"], state.currentType, undefined),

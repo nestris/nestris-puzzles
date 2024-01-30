@@ -1,4 +1,4 @@
-import { BoardState } from "../puzzle-generation/puzzle-models";
+import { BoardState } from "../puzzle-models";
 import { StackrabbitResponse, getStackrabbitMoves } from "../stackrabbit";
 import MoveableTetromino from "./moveable-tetromino";
 import { TetrisBoard } from "./tetris-board";

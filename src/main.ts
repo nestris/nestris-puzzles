@@ -4,9 +4,9 @@ import { GameState } from "./tetris-models/game-state";
 import { TetrisBoard } from "./tetris-models/tetris-board";
 import { TetrominoType, getTetrominoName } from "./tetris-models/tetromino-type";
 import { _rawStackrabbitMoves, getRawStackrabbitMoves, getStackrabbitMoves } from "./stackrabbit";
-import { getRandomBoardState } from "./puzzle-generation/get-random-puzzle";
+import { getRandomBoardState } from "./puzzle-generation/generate-random-puzzle";
 import { PuzzleEvaluation, evaluatePuzzle, getPuzzleEvaluationJSON, ratePuzzleDifficulty } from "./puzzle-generation/evaluate-puzzle";
-import { BoardState } from "./puzzle-generation/puzzle-models";
+import { BoardState } from "./puzzle-models";
 
 dotenv.config();
 

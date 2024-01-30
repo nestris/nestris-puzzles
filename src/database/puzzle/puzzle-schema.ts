@@ -1,4 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { IPuzzleSubmissionSchema } from '../puzzle-submission/puzzle-submission-schema';
 
 export interface IPlacementSchema {
     r: number;
@@ -13,12 +14,7 @@ export interface IPuzzleSolutionSchema {
     secondPiece: IPlacementSchema; // placement of second piece
 }
 
-export interface IPuzzleAttemptSchema {
-    playerElo: number;
-    isCorrect: boolean;
-}
 
-// Define the IUser interface
 export interface IPuzzleSchema {
 
     id: string; // unique id of the puzzle
@@ -31,17 +27,17 @@ export interface IPuzzleSchema {
     correctSolution: IPuzzleSolutionSchema; // the correct solution to the puzzle
     incorrectSolutions: IPuzzleSolutionSchema[]; // incorrect solutions to the puzzle
 
-    attempts: IPuzzleAttemptSchema[]; // attempts at solving the puzzle
+    attempts: number; // number of people who have attempted this puzzle
+    successes: number; // number of people who have solved this puzzle
 
+    usernames: string[]; // list of usernames of users that attempted the puzzle
 }
 
 export enum PuzzleStatus {
-    UNEXPLORED = "UNEXPLORED", // no one has attempted the puzzle yet
-    PENDING = "PENDING", // at least one person has attempted the puzzle, but not enough to be stable
+    PENDING = "PENDING", // puzzle elo is not fixed yet
     STABLE = "STABLE", // puzzle elo is now fixed
 }
 
-// User class with Typegoose decorators, implementing the IUser interface
 class PuzzleSchema implements IPuzzleSchema {
 
     @prop({ required: true, unique: true})
@@ -65,8 +61,14 @@ class PuzzleSchema implements IPuzzleSchema {
     @prop({ required: true })
     public incorrectSolutions!: IPuzzleSolutionSchema[];
 
-    @prop({ default: [] })
-    public attempts!: IPuzzleAttemptSchema[];
+    @prop({ default: 0 })
+    public attempts!: number;
+
+    @prop({ default: 0 })
+    public successes!: number;
+
+    @prop({ default : [] })
+    public usernames!: string[];
 
 }
 

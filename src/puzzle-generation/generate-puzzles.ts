@@ -1,7 +1,7 @@
-import { addPuzzleToDatabase } from "../database/puzzle/puzzle-service";
+import { addPuzzleToDatabase, batchAddPuzzlesToDatabase } from "../database/puzzle/puzzle-service";
 import { PuzzleEvaluation, evaluatePuzzle, ratePuzzleDifficulty } from "./evaluate-puzzle";
-import { getRandomBoardState } from "./get-random-puzzle";
-import { BoardState, Puzzle } from "./puzzle-models";
+import { getRandomBoardState } from "./generate-random-puzzle";
+import { BoardState, Puzzle } from "../puzzle-models";
 
 export function generatePuzzle(): Puzzle | undefined {
 
@@ -51,8 +51,6 @@ export async function generateAndAddPuzzlesToDatabase(numPuzzles: number = 1) {
     console.timeEnd(`Generate ${numPuzzles} Puzzles`);
 
     console.time("Add Puzzles to Database");
-    puzzles.forEach(async (puzzle) => {
-        await addPuzzleToDatabase(puzzle);
-    });
+    await batchAddPuzzlesToDatabase(puzzles);
     console.timeEnd("Add Puzzles to Database");
 }

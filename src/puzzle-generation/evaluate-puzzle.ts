@@ -1,6 +1,6 @@
 import { StackrabbitMove, StackrabbitResponse, getStackrabbitMoves } from "../stackrabbit";
 import MoveableTetromino from "../tetris-models/moveable-tetromino";
-import { BoardState, PuzzleSolution } from "./puzzle-models";
+import { BoardState, PuzzleSolution } from "../puzzle-models";
 
 // Find the matching placement in the response
 // if the placement is best move, return positive difference between best and second best
