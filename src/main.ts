@@ -14,7 +14,7 @@ import { connectToDatabase } from "./database/connect-to-database";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 app.use(express.json());
 
@@ -38,12 +38,12 @@ app.get("/api/raw", (req: Request, res: Response) => {
 POST body {
     username: string,   
 } */
-app.post("/api/fetch-puzzle-for-user", (req: Request, res: Response) => {
+app.post("/api/fetch-puzzle-for-user", async (req: Request, res: Response) => {
 
     const username = req.body['username'];
     if (!username) res.status(400).send("Must provide username");
 
-    const puzzle = getActivePuzzleForUser(username);
+    const puzzle = await getActivePuzzleForUser(username);
     res.send(puzzle);
 });
 /*

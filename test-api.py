@@ -1,8 +1,10 @@
 import requests
 import json
 
+baseURL = "http://localhost:4000"
+
 def fetch_puzzle_for_user(username):
-    url = "http://localhost:3000/api/fetch-puzzle-for-user"
+    url = baseURL + "/api/fetch-puzzle-for-user"
     headers = {'Content-Type': 'application/json'}
     payload = {'username': username}
 
@@ -14,7 +16,7 @@ def fetch_puzzle_for_user(username):
         return f"Error: {response.status_code}"
     
 def generate_puzzles(count):
-    url = "http://localhost:3000/api/generate-puzzles"
+    url = baseURL + "/api/generate-puzzles"
     headers = {'Content-Type': 'application/json'}
     payload = {'count': 10}
 
@@ -26,5 +28,5 @@ def generate_puzzles(count):
         return f"Error: {response.status_code}"
 
 # Example usage
-#print(fetch_puzzle_for_user("ansel"))
-print(generate_puzzles(10))
+print(fetch_puzzle_for_user("ansel"))
+#print(generate_puzzles(10))

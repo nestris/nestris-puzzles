@@ -5,7 +5,7 @@ export async function getUserByUsername(username: string): Promise<IPuzzleUserSc
     
     const user = await DBPuzzleUser.findOne({ username: username });
     if (user) {
-        console.log("User found:", user);
+        console.log("User found:", user.username, "with elo", user.elo);
         return user;
     }
     else {
